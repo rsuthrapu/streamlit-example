@@ -1,14 +1,21 @@
 from collections import namedtuple
 from io import StringIO
 import altair as alt
-import math
+import numpy as np
 import pandas as pd
 import streamlit as st
 import tableauserverclient as TSC
 from tkinter import *
 from tkinter import ttk
 """
-# Tableau Report intg. with Streamlit!
+# Welcome to Streamlit!
+
+Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
+
+If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
+forums](https://discuss.streamlit.io).
+
+In the meantime, below is an example of what you can do with just a few lines of code:
 """
 
 # root =  Tk()
@@ -60,15 +67,10 @@ workbooks_names, views_names, view_name, view_image, view_csv = run_query()
 st.subheader("📓 Workbooks")
 st.write("Found the following workbooks:", "".join(workbooks_names[0]))
 
-st.subheader("👁️ Views")
-st.write(
-    f"Workbook *{workbooks_names[0]}* has the following views:",
-    ", ".join(views_names),
-)
+    Point = namedtuple('Point', 'x y')
+    data = []
 
-# st.subheader("🖼️ Image")
-# st.write(f"Here's what view *{view_name}* looks like:")
-# st.image(view_image, width=300)
+    points_per_turn = total_points / num_turns
 
 st.subheader("📊 Data")
 st.write(f"And here's the data for view *{view_name}*:")
