@@ -1,38 +1,76 @@
 from collections import namedtuple
+from io import StringIO
 import altair as alt
 import math
 import pandas as pd
 import streamlit as st
-
+import tableauserverclient as TSC
+from tkinter import *
+from tkinter import ttk
 """
-# Welcome to Streamlit!
-
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
-
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
-
-In the meantime, below is an example of what you can do with just a few lines of code:
+# Tableau Report intg. with Streamlit!
 """
 
+# root =  Tk()
 
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
 
-    Point = namedtuple('Point', 'x y')
-    data = []
+# Set up connection.
+tableau_auth = TSC.TableauAuth('rsuthrapu', 'Rs050222@RAJ')
+server = TSC.Server('http://pwtabmyn01/', use_server_version=True)
 
-    points_per_turn = total_points / num_turns
+# with server.auth.sign_in(tableau_auth):
+#     all_datasources, pagination_item = server.datasources.get()
+#     print("\nThere are {} datasources on site: ".format(pagination_item.total_available))
+#     print([datasource.name for datasource in all_datasources])     
+#     st.write([datasource.name for datasource in all_datasources])
 
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
+# Get various data.
+# Explore the tableauserverclient library for more options.
+# Uses st.cache_data to only rerun when the query changes or after 10 min.
+@st.cache_data(ttl=600)
+def run_query():
+    with server.auth.sign_in(tableau_auth):
 
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+        # Get all workbooks.
+        workbooks, pagination_item = server.workbooks.get()
+        workbooks_names = [w.name for w in workbooks]
+
+        # my_combo =  ttk.Combobox(root, values=workbooks_names)
+        # my_combo.pack(pady=20)
+
+        # Get views for first workbook.
+        server.workbooks.populate_views(workbooks[0])
+        views_names = [v.name for v in workbooks[0].views]
+
+        # Get image & CSV for first view of first workbook.
+        view_item = workbooks[0].views[1]
+        server.views.populate_image(view_item)
+        server.views.populate_csv(view_item)
+        view_name = view_item.name
+        view_image = view_item.image
+        # `view_item.csv` is a list of binary objects, convert to str.
+        view_csv = b"".join(view_item.csv).decode("utf-8")
+
+        return workbooks_names, views_names, view_name, view_image, view_csv
+
+workbooks_names, views_names, view_name, view_image, view_csv = run_query()
+
+
+# Print results.
+st.subheader("📓 Workbooks")
+st.write("Found the following workbooks:", "".join(workbooks_names[0]))
+
+st.subheader("👁️ Views")
+st.write(
+    f"Workbook *{workbooks_names[0]}* has the following views:",
+    ", ".join(views_names),
+)
+
+# st.subheader("🖼️ Image")
+# st.write(f"Here's what view *{view_name}* looks like:")
+# st.image(view_image, width=300)
+
+st.subheader("📊 Data")
+st.write(f"And here's the data for view *{view_name}*:")
+st.write(pd.read_csv(StringIO(view_csv)))
+
