@@ -1,16 +1,24 @@
 # Import python packages
 import streamlit as st
-import snowflake.snowpark
-from snowflake.snowpark.context import get_active_session
-import snowflake.snowpark.session as session
+import snowflake.snowpark 
+from snowflake.snowpark import Session
 import pandas as pd
 
-st.set_page_config(layout="wide")
-# Get the current credentials
-session = get_active_session()
 
+st.set_page_config(layout="wide")
 st.title("----------- Financials------------------ ")
 
+# Replace with your Snowflake connection details
+connection_params = {
+    "account": "REA00670",
+    "user": "RSUTHRAPU@CIGINSURANCE.COM",
+    "password": "Welcome123@",
+    "warehouse": "WH_GLUE_CLAIM_QA",
+    "database": "CLAIM_QA",
+    "schema": "MRG",
+}
+# Create a Snowflake session
+session = Session.builder.configs(connection_params).create()
 
 # Replace with your actual Snowflake table name and schema
 sql_template = """

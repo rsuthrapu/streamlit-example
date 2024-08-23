@@ -1,18 +1,20 @@
-# import snowflake.snowpark.session as session
+import snowflake.connector
 
-# # Replace with your Snowflake credentials
-# connection_parameters = {
-#     "account": "your_account",
-#     "user": "your_user",
-#     "password": "your_password",
-#     "role": "your_role",
-#     "warehouse": "your_warehouse",
-#     "database": "your_database",
-#     "schema": "your_schema"
-# }
+# Connect to Snowflake
+conn = snowflake.connector.connect(
+    user='RSUTHRAPU@CIGINSURANCE.COM',
+    password='Welcome123@',
+    account='REA00670'
+)
 
-# session = session.Session.builder.configs(connection_parameters).create()
+# Create a cursor
+cur = conn.cursor()
 
-# # Example query
-# df = session.sql("SELECT * FROM your_table LIMIT 10")
-# df.show()
+# Execute a query
+cur.execute('SELECT * FROM claim_qa.MRG.CCTL_CLAIMSTATE')
+
+# Fetch results
+results = cur.fetchall()
+
+# Close the connection
+conn.close()
